@@ -5,6 +5,10 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/wbids)](https://cran.r-project.org/package=wbids)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/wbids)](https://cran.r-project.org/package=wbids)
 [![R-CMD-check](https://github.com/Teal-Insights/r-wbids/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Teal-Insights/r-wbids/actions/workflows/R-CMD-check.yaml)
 [![Lint](https://github.com/Teal-Insights/r-wbids/actions/workflows/lint.yaml/badge.svg)](https://github.com/Teal-Insights/r-wbids/actions/workflows/lint.yaml)
 [![Codecov test
@@ -45,6 +49,9 @@ You can also install the development version of `wbids` like this:
 pak::pak("teal-insights/r-wbids")
 ```
 
+On Linux, you may need to install `libcurl4-openssl-dev` as a
+prerequisite to build the package.
+
 ## Usage
 
 The main function `ids_get()` provides an interface to download multiple
@@ -58,8 +65,8 @@ ids_get(
   geographies = c("ZMB", "ZAF"),
   series = c("DT.DOD.DPPG.CD", "BM.GSR.TOTL.CD"),
   counterparts = c("216", "231"),
-  start_date = 2015,
-  end_date = 2020
+  start_year = 2015,
+  end_year = 2020
 )
 ```
 

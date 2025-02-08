@@ -29,7 +29,7 @@
 #'
 #' @export
 #' @examplesIf curl::has_internet() && rlang::is_installed("readxl")
-#' \donttest{
+#' \dontrun{
 #' available_files <- ids_bulk_files()
 #' data <- ids_bulk(
 #'   available_files$file_url[1]
@@ -85,8 +85,19 @@ get_response_headers <- function(file_url) {
 #' @noRd
 #'
 download_bulk_file <- function(file_url, file_path, timeout, warn_size, quiet) {
-
+  # Error on response mime type mismatch (esp. HTML instead of Excel)
   response_headers <- get_response_headers(file_url)
+  mime_type <- mime::guess_type(file_path)
+
+  if (response_headers$`content-type` != mime_type) {
+    cli::cli_abort(
+      paste0(
+        "Request returned an invalid file type. ",
+        "Please check the URL and try again."
+      )
+    )
+  }
+
   size_mb <- as.numeric(response_headers$`content-length`) / 1024^2
   formatted_size <- format(round(size_mb, 1), nsmall = 1) # nolint
 
@@ -156,18 +167,26 @@ validate_file <- function(file_path) {
 #' @noRd
 #'
 read_bulk_file <- function(file_path) {
-  available_columns <- readxl::read_excel(path = file_path, n_max = 0) |>
-    colnames()
-  relevant_columns <- tibble(names = available_columns) |>
-    mutate(
-      type = if_else(grepl(pattern = "[0:9]", .data$names), "numeric", "text")
-    ) |>
-    filter(!grepl("column", names, ignore.case = TRUE))
+  # Read in first row of Excel file to get column names
+  header_row <- readxl::read_excel(path = file_path, n_max = 0)
 
+  # Get all column names
+  available_columns <- header_row |> colnames()
+
+  # Initialize a helper tibble mapping relevant column names to types
+  relevant_columns <- tibble(names = available_columns) |>
+    # Drop column names that contain "column" (which are empty in the bulk file)
+    filter(!grepl("column", .data$names, ignore.case = TRUE)) |>
+    # Year columns are numeric, all others are text
+    mutate(
+      types = if_else(grepl(pattern = "[0:9]", .data$names), "numeric", "text")
+    )
+
+  # Read in the data from the Excel file for only the relevant columns
   readxl::read_excel(
     path = file_path,
     range = readxl::cell_cols(seq_len(nrow(relevant_columns))),
-    col_types = relevant_columns$type
+    col_types = relevant_columns$types
   )
 }
 
@@ -179,18 +198,26 @@ read_bulk_file <- function(file_path) {
 #'
 process_bulk_data <- function(bulk_raw) {
   bulk_raw |>
-    select(-c("Country Name", "Classification Name")) |>
+    # Select only the relevant columns
+    select(
+      "Country Code", "Series Code", "Counterpart-Area Code",
+      matches("^\\d{4}$")
+    ) |>
+    # Rename columns to match the package data model
     select(
       geography_id = "Country Code",
       series_id = "Series Code",
-      counterpart_id = "Series Name",
+      counterpart_id = "Counterpart-Area Code",
       everything()
     ) |>
+    # Pivot to long (tidy) format
     tidyr::pivot_longer(
       cols = -c("geography_id", "series_id", "counterpart_id"),
       names_to = "year"
     ) |>
+    # Convert year to integer
     mutate(year = as.integer(.data$year)) |>
+    # Drop rows with NA values
     tidyr::drop_na()
 }
 

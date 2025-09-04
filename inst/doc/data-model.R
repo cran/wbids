@@ -1,10 +1,10 @@
 ## erDiagram
-##     GEOGRAPHIES ||--o{ DEBT_STATISTICS : has
-##     GEOGRAPHIES {
-##         string geography_id PK
-##         string geography_name
-##         string geography_iso2code
-##         string geography_type
+##     ENTITIES ||--o{ DEBT_STATISTICS : has
+##     ENTITIES {
+##         string entity_id PK
+##         string entity_name
+##         string entity_iso2code
+##         string entity_type
 ##         string capital_city
 ##         string region_id
 ##         string region_iso2code
@@ -40,7 +40,7 @@
 ##     }
 ##     DEBT_STATISTICS {
 ##         string series_id FK
-##         string geography_id FK
+##         string entity_id FK
 ##         string counterpart_id FK
 ##         int year
 ##         float value

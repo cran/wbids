@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.39">
+<meta name="generator" content="quarto-1.7.32">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -2515,19 +2515,19 @@ z-index: 1000;
 
 
 <h2 id="overview">Overview</h2>
-<p>The diagram below shows the data model of the <code>wbids</code> package. In our design, we primarily have R users in mind, particularly those who rely heavily on the popular data manipulation packages <code>dplyr</code> and <code>data.table</code>. For these users, having consistent and descriptive primary key column names across different tables (e.g., <code>geography_id</code>, <code>series_id</code>) simplifies writing joins across tables, reduces the risk of column name conflicts, and avoids ambiguity. We hence deliberately deviate from a common practice in data modeling to omit the entity prefix from a entity table (e.g. <code>geography_</code> in the geographies table).</p>
+<p>The diagram below shows the data model of the <code>wbids</code> package. In our design, we primarily have R users in mind, particularly those who rely heavily on the popular data manipulation packages <code>dplyr</code> and <code>data.table</code>. For these users, having consistent and descriptive primary key column names across different tables (e.g., <code>entity_id</code>, <code>series_id</code>) simplifies writing joins across tables, reduces the risk of column name conflicts, and avoids ambiguity. We hence deliberately deviate from a common practice in data modeling to omit the entity prefix from a entity table (e.g. <code>entity_</code> in the entities table).</p>
 <div class="cell" data-fig-width="12" data-fig-height="8" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class><p></p>
 <div>
 <pre class="mermaid mermaid-js">erDiagram
-    GEOGRAPHIES ||--o{ DEBT_STATISTICS : has
-    GEOGRAPHIES {
-        string geography_id PK
-        string geography_name
-        string geography_iso2code
-        string geography_type
+    ENTITIES ||--o{ DEBT_STATISTICS : has
+    ENTITIES {
+        string entity_id PK
+        string entity_name
+        string entity_iso2code
+        string entity_type
         string capital_city
         string region_id
         string region_iso2code
@@ -2563,7 +2563,7 @@ z-index: 1000;
     }
     DEBT_STATISTICS {
         string series_id FK
-        string geography_id FK
+        string entity_id FK
         string counterpart_id FK
         int year
         float value
@@ -2575,7 +2575,7 @@ z-index: 1000;
 </div>
 </div>
 <h2 id="table-details">Table Details</h2>
-<h3 id="geographies">Geographies</h3>
+<h3 id="entities">Entities</h3>
 <table class="caption-top">
 <colgroup>
 <col style="width: 23%">
@@ -2591,28 +2591,28 @@ z-index: 1000;
 </thead>
 <tbody>
 <tr class="odd">
-<td>geography_id</td>
-<td>ISO 3166-1 alpha-3 code of the geography</td>
+<td>entity_id</td>
+<td>ISO 3166-1 alpha-3 code of the entity</td>
 <td>ZMB</td>
 </tr>
 <tr class="even">
-<td>geography_name</td>
-<td>Standardized name of the geography</td>
+<td>entity_name</td>
+<td>Standardized name of the entity</td>
 <td>Zambia</td>
 </tr>
 <tr class="odd">
-<td>geography_iso2code</td>
-<td>ISO 3166-1 alpha-2 code of the geography</td>
+<td>entity_iso2code</td>
+<td>ISO 3166-1 alpha-2 code of the entity</td>
 <td>ZM</td>
 </tr>
 <tr class="even">
-<td>geography_type</td>
-<td>Type of geography (e.g., country, region)</td>
+<td>entity_type</td>
+<td>Type of entity (e.g., country, region)</td>
 <td>Country</td>
 </tr>
 <tr class="odd">
 <td>capital_city</td>
-<td>Capital city of the geography</td>
+<td>Capital city of the entity</td>
 <td>Lusaka</td>
 </tr>
 <tr class="even">
@@ -2762,8 +2762,8 @@ z-index: 1000;
 <td>DT.DOD.DPPG.CD</td>
 </tr>
 <tr class="even">
-<td>geography_id</td>
-<td>Identifier for the geography</td>
+<td>entity_id</td>
+<td>Identifier for the entity</td>
 <td>ZMB</td>
 </tr>
 <tr class="odd">
@@ -2783,11 +2783,11 @@ z-index: 1000;
 </tr>
 </tbody>
 </table>
-<h2 id="assignment-of-geography-and-counterpart-types">Assignment of Geography and Counterpart Types</h2>
-<p>The original World Bank IDS data includes a ‘country’ field, containing both countries and regions, and a ‘counterpart-area’ field, which may include countries, regions, and institutions. In our data model, these fields are renamed to ‘geography’ and ‘counterpart’ to clarify the types of entities in each column.</p>
-<p>We also introduce corresponding type columns that specify whether a geography is a country (e.g., “Aruba”) or a region (e.g., “Africa Eastern and Southern”), and whether a counterpart is a country, region, or a special category (e.g., “Global IFIs”, “Global MDBs”). Each counterpart is represented in the geography table if it is a country or region, ensuring consistency across both tables.</p>
-<h2 id="harmonization-of-geography-and-counterpart-names">Harmonization of Geography and Counterpart Names</h2>
-<p>In some cases, the IDS data provides different names for geographies that appear both in the ‘counterpart-area’ and the ‘country’ data. We use the geography names whenever they are available and drop counterpart names with different wording. For instance, if the original data features “Cote D`Ivoire, Republic Of” in the counterpart table, but the country name is “Cote d’Ivoire”, then we overwrite the former with the latter.</p>
+<h2 id="assignment-of-entity-and-counterpart-types">Assignment of Entity and Counterpart Types</h2>
+<p>The original World Bank IDS data includes a ‘country’ field, containing both countries and regions, and a ‘counterpart-area’ field, which may include countries, regions, and institutions. In our data model, these fields are renamed to ‘entity’ and ‘counterpart’ to clarify the types of entities in each column.</p>
+<p>We also introduce corresponding type columns that specify whether a entity is a country (e.g., “Aruba”) or a region (e.g., “Africa Eastern and Southern”), and whether a counterpart is a country, region, or a special category (e.g., “Global IFIs”, “Global MDBs”). Each counterpart is represented in the entity table if it is a country or region, ensuring consistency across both tables.</p>
+<h2 id="harmonization-of-entity-and-counterpart-names">Harmonization of Entity and Counterpart Names</h2>
+<p>In some cases, the IDS data provides different names for entities that appear both in the ‘counterpart-area’ and the ‘country’ data. We use the entity names whenever they are available and drop counterpart names with different wording. For instance, if the original data features “Cote D`Ivoire, Republic Of” in the counterpart table, but the country name is “Cote d’Ivoire”, then we overwrite the former with the latter.</p>
 
 
 
